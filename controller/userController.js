@@ -1,68 +1,72 @@
-import userModel from "../models/userModel.js";
+import UserModel from "../models/userModel.js"; // Assuming userModel is a class
 
-// ===================User Controller===================
+// =================== User Controller (Class-Based) ===================
 
-const index = async (req, res) => {
-  try {
-    const users = await userModel.find();
-    res.render('signup', { users })
-  } catch (error) {
-    console.log(error)
+class UserController {
+
+  static async index(req, res) {
+    try {
+      const users = await UserModel.find();
+      res.render('signup', { users });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  static async addUser(req, res) {
+    try {
+      const { name, email, address, phone } = req.body;
+      const newUser = new UserModel({
+        userName: name,
+        userEmail: email,
+        userAddress: address,
+        userPhone: phone,
+      });
+      const savedUser = await newUser.save();
+      res.redirect('/');
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  static async editUser(req, res) {
+    try {
+      const user = await UserModel.findById(req.params.id);
+      res.render('edit', { user });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  static async updateUser(req, res) {
+    try {
+      const userId = req.body.id;
+      const { name, email, address, phone } = req.body;
+      const updatedUser = await UserModel.findByIdAndUpdate(userId, {
+        userName: name,
+        userEmail: email,
+        userAddress: address,
+        userPhone: phone,
+      });
+
+      if (!updatedUser) {
+        console.error(`User with ID ${userId} not found for update`);
+      }
+
+      res.redirect('/');
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  static async deleteUser(req, res) {
+    try {
+      const deletedUser = await UserModel.findByIdAndDelete(req.params.id);
+      res.redirect('/');
+    } catch (error) {
+      console.error(error);
+    }
   }
 }
 
-const addUser = async (req, res) => {
-  try {
-    const { name, email, address, phone } = req.body;
-    const doc = new userModel({
-      userName: name,
-      userEmail: email,
-      userAddress: address,
-      userPhone: phone
-    })
-    const rs = await doc.save();
-    res.redirect('/');
-  } catch (error) {
-    console.log(error)
-  }
-}
-
-const editUser = async (req, res) => {
-  try {
-    const user = await userModel.findById(req.params.id);
-    res.render('edit', { user })
-  } catch (error) {
-    console.log(error)
-  }
-}
-
-const updateUser = async (req, res) => {
-  try {
-    const userId = req.body.id;
-    console.log(userId)
-    const { name, email, address, phone } = req.body;
-    const updateRecord = new userModel({
-      _id: userId,
-      userName: name,
-      userEmail: email,
-      userAddress: address,
-      userPhone: phone
-    })
-
-    const updatedUser = await userModel.findByIdAndUpdate(userId, updateRecord);
-    res.redirect('/');
-  } catch (error) {
-    console.log(error)
-  }
-}
-
-const deleteUser = async (req, res) => {
-  try {
-    const deletedUser = await userModel.findByIdAndDelete(req.params.id);
-    res.redirect('/');
-  } catch (error) {
-    console.log(error)
-  }
-}
-
-export { index, addUser, editUser, updateUser, deleteUser }
+export default  UserController; 
